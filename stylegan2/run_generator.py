@@ -185,6 +185,42 @@ def apply_vector_on_backprop(network_pkl, dlatents_files_pattern,
                             dnnlib.make_run_dir_path(fname))
 
 
+def apply_vector_on_backprop_age(network_pkl, dlatents_files_dir,
+                             direction_path, coeff):
+    print('Loading networks from "%s"...' % network_pkl)
+    _G, _D, Gs = pretrained_networks.load_networks(network_pkl)
+    
+    Gs_kwargs = dnnlib.EasyDict()
+    Gs_kwargs.output_transform = dict(func=tflib.convert_images_to_uint8,
+                                      nchw_to_nhwc=True)
+    Gs_kwargs.randomize_noise = False
+
+    age = np.load(direction_path)
+    if len(age) == 512:
+        age = np.tile(age, [18, 1])
+    
+    dlatents = []
+    dlatents_files = glob(dlatents_files_dir + '*.npy')
+    for file in tqdm(dlatents_files):
+        person_name = file.split('/')[-1].split('.')[0]
+        dlatent = np.load(file)
+        if len(dlatent) == 512:
+            dlatent = np.tile(dlatent, [18, 1])
+        elif len(dlatent) == 512 * 18:
+            dlatent = np.reshape(dlatent, [18, 512])
+        else:
+            raise Exception('Wrong person vector')
+
+        dlatents_person = []
+        fnames = []
+        dlatents_person.append(dlatent + coeff * age)
+        fnames.append(f'translation_{person_name}_{coef}.png')
+        images = Gs.components.synthesis.run(np.array(dlatents_person), **Gs_kwargs)
+        
+        for fname, image in zip(fnames, images):
+            PIL.Image.fromarray(image, 'RGB').save(dnnlib.make_run_dir_path(fname))
+
+
 def style_mixing_example(network_pkl, row_seeds, col_seeds, truncation_psi, col_styles, minibatch_size=4):
     print('Loading networks from "%s"...' % network_pkl)
     _G, _D, Gs = pretrained_networks.load_networks(network_pkl)
@@ -313,13 +349,15 @@ Run 'python %(prog)s <subcommand> --help' for subcommand help.''',
                                                help='Network pickle filename',
                                                dest='network_pkl',
                                                required=True)
-    parser_apply_vector_on_backprop.add_argument('--dlatents_files_pattern',
+    parser_apply_vector_on_backprop.add_argument('--dlatents_files_dir',
                                                  default=None)
     parser_apply_vector_on_backprop.add_argument('--direction_path', default=None)
     parser_apply_vector_on_backprop.add_argument('--transformation',
                                                  default=None)
     parser_apply_vector_on_backprop.add_argument('--result-dir',
                                                  help='Root directory for run results (default: %(default)s)', default='results', metavar='DIR')
+    parser_apply_vector_on_backprop.add_argument('--coeff', dest='coeff',
+                                               type=float)
 
     parser_style_mixing_example = subparsers.add_parser('style-mixing-example', help='Generate style mixing video')
     parser_style_mixing_example.add_argument('--network', help='Network pickle filename', dest='network_pkl', required=True)
@@ -347,7 +385,7 @@ Run 'python %(prog)s <subcommand> --help' for subcommand help.''',
     func_name_map = {
         'generate-images': 'run_generator.generate_images',
         'generate-images-custom': 'run_generator.generate_images_custom',
-        'apply-vector-on-backprop': 'run_generator.apply_vector_on_backprop',
+        'apply-vector-on-backprop': 'run_generator.apply_vector_on_backprop_age',
         'style-mixing-example': 'run_generator.style_mixing_example'
     }
     dnnlib.submit_run(sc, func_name_map[subcmd], **kwargs)
