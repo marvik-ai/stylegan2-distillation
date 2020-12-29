@@ -60,7 +60,7 @@ def generate_images(network_pkl, seeds, num, truncation_psi):
         tflib.set_vars({var: rnd.randn(*var.shape.as_list()) for var in noise_vars}) # [height, width]
         w = Gs.components.mapping.run(z, None)
         images = Gs.components.synthesis.run(w, **Gs_kwargs) # [minibatch, height, width, channel]
-        cur_time = time.time()
+        cur_time = int(time.time())
         PIL.Image.fromarray(images[0], 'RGB').save(f'{images_dir}/img_{seed_idx}_{cur_time}.png')
         np.save(f'{dlatents_dir}/img_{seed_idx}_{cur_time}.npy', w[0])
 
