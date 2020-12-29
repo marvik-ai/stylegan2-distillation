@@ -214,7 +214,7 @@ def apply_vector_on_backprop_age(network_pkl, dlatents_files_dir,
         dlatents_person = []
         fnames = []
         dlatents_person.append(dlatent + coeff * age)
-        fnames.append(f'translation_{person_name}_{coef}.png')
+        fnames.append(f'translation_{person_name}_{coeff}.png')
         images = Gs.components.synthesis.run(np.array(dlatents_person), **Gs_kwargs)
         
         for fname, image in zip(fnames, images):
@@ -352,8 +352,8 @@ Run 'python %(prog)s <subcommand> --help' for subcommand help.''',
     parser_apply_vector_on_backprop.add_argument('--dlatents_files_dir',
                                                  default=None)
     parser_apply_vector_on_backprop.add_argument('--direction_path', default=None)
-    parser_apply_vector_on_backprop.add_argument('--transformation',
-                                                 default=None)
+    #parser_apply_vector_on_backprop.add_argument('--transformation',
+    #                                             default=None)
     parser_apply_vector_on_backprop.add_argument('--result-dir',
                                                  help='Root directory for run results (default: %(default)s)', default='results', metavar='DIR')
     parser_apply_vector_on_backprop.add_argument('--coeff', dest='coeff',
