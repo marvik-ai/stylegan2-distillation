@@ -6,6 +6,7 @@
 
 import argparse
 import json
+import time
 import numpy as np
 import dnnlib
 import dnnlib.tflib as tflib
