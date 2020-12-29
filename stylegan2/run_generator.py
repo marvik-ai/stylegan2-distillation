@@ -30,9 +30,6 @@ except:
 
 def generate_images(network_pkl, seeds, num, truncation_psi):
     result_dir = Path(dnnlib.submit_config.run_dir_root)
-    
-    if direction_path is not None:
-        direction = np.load(direction_path)
 
     images_dir = result_dir / 'images'
     dlatents_dir = result_dir / 'dlatents'
