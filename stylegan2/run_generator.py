@@ -28,21 +28,19 @@ except:
         import PIL
 
 
-def generate_images(network_pkl, seeds, num, truncation_psi, output_dir):
+def generate_images(network_pkl, seeds, num, truncation_psi):
     result_dir = Path(dnnlib.submit_config.run_dir_root)
-    output_dir = Path(output_dir)
-
+    
     if direction_path is not None:
         direction = np.load(direction_path)
 
     images_dir = result_dir / 'images'
     dlatents_dir = result_dir / 'dlatents'
-    output_tsv = output_dir / 'out.tsv'
+    output_tsv = result_dir / 'out.tsv'
 
     images_dir.mkdir(exist_ok=True, parents=True)
     dlatents_dir.mkdir(exist_ok=True, parents=True)
-    output_dir.mkdir(exist_ok=True)
-
+    
     print('Loading networks from "%s"...' % network_pkl)
     _G, _D, Gs = pretrained_networks.load_networks(network_pkl)
     noise_vars = [var for name, var in Gs.components.synthesis.vars.items() if name.startswith('noise')]
